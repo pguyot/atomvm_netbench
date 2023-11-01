@@ -11,9 +11,11 @@
 % =========================================================================== %
 run_device_test(ClientSocket, _PeerIP) ->
     {ok, TestSocket} = socket:open(inet, dgram, udp),
+    ok = socket:setopt(TestSocket, {socket, reuseaddr}, true),
     ok = socket:bind(TestSocket, #{family => inet, port => ?TEST_PORT, addr => any}),
     ok = socket:send(ClientSocket, <<"-READY\r\n">>),
-    test_device_loop(TestSocket).
+    test_device_loop(TestSocket),
+    ok = socket:close(TestSocket).
 
 test_device_loop(TestSocket) ->
     {ok, {PeerAddr, Message}} = socket:recvfrom(TestSocket),

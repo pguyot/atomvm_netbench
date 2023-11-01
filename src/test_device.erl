@@ -34,6 +34,7 @@ start_network(Port) ->
 
 start_test(Port) ->
     {ok, ServerSocket} = socket:open(inet, stream, tcp),
+    ok = socket:setopt(ServerSocket, {socket, reuseaddr}, true),
     ok = socket:bind(ServerSocket, #{family => inet, port => Port, addr => any}),
     ok = socket:listen(ServerSocket),
     test_loop(ServerSocket).

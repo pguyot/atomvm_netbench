@@ -32,6 +32,7 @@ test_device_loop(TestSocket) ->
 % =========================================================================== %
 run_controller_test(ClientSocket, _ClientIP) ->
     {ok, TestSocket} = socket:open(inet, stream, tcp),
+    ok = socket:setopt(TestSocket, {socket, reuseaddr}, true),
     ok = socket:bind(TestSocket, #{family => inet, port => ?TEST_PORT, addr => any}),
     ok = socket:listen(TestSocket),
     ok = socket:send(ClientSocket, <<"-READY\r\n">>),
