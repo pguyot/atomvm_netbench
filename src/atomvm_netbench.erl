@@ -11,9 +11,14 @@
 % - OTP-based device (with --device)
 main(["--device"]) ->
     test_device:run(?PORT);
-main([ClientIPStr]) ->
+main([ClientIPStr | Tail]) ->
     {ok, ClientIP} = inet:getaddr(ClientIPStr, inet),
-    test_controller:run(ClientIP, ?PORT).
+    case Tail of
+        [] ->
+            test_controller:run_all(ClientIP, ?PORT);
+        L ->
+            test_controller:run(ClientIP, ?PORT, [list_to_atom(Test) || Test <- L])
+    end.
 
 start() ->
     test_device:run(?PORT).

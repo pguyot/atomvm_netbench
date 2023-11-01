@@ -2,16 +2,26 @@
 % SPDX-License-Identifier: Apache-2.0 OR LGPL-2.1-or-later
 
 -module(test_controller).
--export([run/2]).
+-export([run_all/2, run/3]).
 
-run(ClientIP, Port) ->
+-define(ALL_TESTS, [udp_echo_test, tcp_echo_test, tcp_priv_server_test]).
+
+run_all(ClientIP, Port) ->
+    run(ClientIP, Port, ?ALL_TESTS).
+
+run(ClientIP, Port, Tests) ->
     {ok, Socket} = socket:open(inet, stream, tcp),
     ok = socket:connect(Socket, #{family => inet, addr => ClientIP, port => Port}),
     lists:foreach(
         fun(Test) ->
-            run_test(Socket, ClientIP, Test)
+            case lists:member(Test, ?ALL_TESTS) of
+                true ->
+                    run_test(Socket, ClientIP, Test);
+                false ->
+                    io:format("Unknown test ~s\n", [Test])
+            end
         end,
-        [udp_echo_test, tcp_echo_test, tcp_priv_server_test]
+        Tests
     ),
     ok = socket:close(Socket),
     ok.
