@@ -7,6 +7,7 @@
 -define(TEST_PORT, 40891).
 -define(APPLICATION, atomvm_netbench).
 -define(PRIV_FILE_PATH, "AtomVM-logo.png").
+-define(PARALLEL, 10).
 
 % =========================================================================== %
 % Device code
@@ -15,9 +16,9 @@ run_device_test(ClientSocket, _PeerIP) ->
     {ok, TestSocket} = socket:open(inet, stream, tcp),
     ok = socket:setopt(TestSocket, {socket, reuseaddr}, true),
     ok = socket:bind(TestSocket, #{family => inet, port => ?TEST_PORT, addr => any}),
-    ok = socket:listen(TestSocket, 10),
+    ok = socket:listen(TestSocket, ?PARALLEL),
     ok = socket:send(ClientSocket, <<"-READY\r\n">>),
-    Workers = test_device_loop(TestSocket, 10, []),
+    Workers = test_device_loop(TestSocket, ?PARALLEL, []),
     ok = socket:close(TestSocket),
     lists:foreach(
         fun({Pid, MonRef}) ->
@@ -51,8 +52,8 @@ test_device_server_worker(ClientSocket) ->
         end,
     Size = byte_size(Data),
     SizeBin = <<Size:32>>,
-    ok = socket:send(ClientSocket, SizeBin),
-    ok = socket:send(ClientSocket, Data),
+    ok = sendloop(ClientSocket, SizeBin),
+    ok = sendloop(ClientSocket, Data),
     % Wait for client close
     case socket:recv(ClientSocket, 1) of
         {error, closed} -> ok;
@@ -60,6 +61,13 @@ test_device_server_worker(ClientSocket) ->
     end,
     ok = socket:close(ClientSocket),
     ok.
+
+sendloop(ClientSocket, Data) ->
+    case socket:send(ClientSocket, Data) of
+        {ok, Rest} ->
+            sendloop(ClientSocket, Rest);
+        Other -> Other
+    end.
 
 % =========================================================================== %
 % Controller code
@@ -70,7 +78,7 @@ run_controller_test(ClientSocket, ClientIP) ->
         fun(_) ->
             spawn_opt(fun() -> test_controller_client_worker(ClientIP) end, [monitor])
         end,
-        lists:seq(1, 10)
+        lists:seq(1, ?PARALLEL)
     ),
     lists:foreach(
         fun({Pid, Ref}) ->
