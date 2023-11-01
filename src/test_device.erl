@@ -7,20 +7,24 @@
 % Code to run on a device to execute the various tests.
 % First, listen using TCP and wait for the controller to connect.
 run(Port) ->
-    NetworkStart = try atomvm:platform() of
-        pico -> true;
-        esp32 -> true;
-        _ -> false
-    catch _:undef -> false
-    end,
-    {Pid, MonitorRef} = if
-        NetworkStart ->
-            start_network(Port);
-        true ->
-            spawn_opt(fun() -> start_test(Port) end, [monitor])
-    end,
+    NetworkStart =
+        try atomvm:platform() of
+            pico -> true;
+            esp32 -> true;
+            _ -> false
+        catch
+            _:undef -> false
+        end,
+    {Pid, MonitorRef} =
+        if
+            NetworkStart ->
+                start_network(Port);
+            true ->
+                spawn_opt(fun() -> start_test(Port) end, [monitor])
+        end,
     receive
-        {'DOWN', MonitorRef, process, Pid, normal} -> ok;
+        {'DOWN', MonitorRef, process, Pid, normal} ->
+            ok;
         {'DOWN', MonitorRef, process, Pid, Reason} ->
             io:format("Process exited with reason ~p\n", [Reason])
     end.
@@ -58,9 +62,13 @@ test_run_loop(ClientSocket, PeerIP) ->
                 End = erlang:system_time(millisecond),
                 Elapsed = End - Start,
                 ok = socket:send(ClientSocket, io_lib:format("+OK ~Bms\r\n", [Elapsed]))
-            catch Ex:Err:Stacktrace ->
-                io:format("Exception occurred\nError: {~p, ~p}\nTest line:\n----\n~s----\nStacktrace:\n~p\n", [Ex, Err, Line, Stacktrace]),
-                ok = socket:send(ClientSocket, io_lib:format("+ERR {~p, ~p}\r\n", [Ex, Err]))
+            catch
+                Ex:Err:Stacktrace ->
+                    io:format(
+                        "Exception occurred\nError: {~p, ~p}\nTest line:\n----\n~s----\nStacktrace:\n~p\n",
+                        [Ex, Err, Line, Stacktrace]
+                    ),
+                    ok = socket:send(ClientSocket, io_lib:format("+ERR {~p, ~p}\r\n", [Ex, Err]))
             end,
             test_run_loop(ClientSocket, PeerIP);
         {error, closed} ->

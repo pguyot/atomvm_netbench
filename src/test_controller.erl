@@ -7,9 +7,12 @@
 run(ClientIP, Port) ->
     {ok, Socket} = socket:open(inet, stream, tcp),
     ok = socket:connect(Socket, #{family => inet, addr => ClientIP, port => Port}),
-    lists:foreach(fun(Test) ->
-        run_test(Socket, ClientIP, Test)
-    end, [udp_echo_test, tcp_echo_test]),
+    lists:foreach(
+        fun(Test) ->
+            run_test(Socket, ClientIP, Test)
+        end,
+        [udp_echo_test, tcp_echo_test, tcp_priv_server_test]
+    ),
     ok = socket:close(Socket),
     ok.
 

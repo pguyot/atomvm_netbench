@@ -22,8 +22,7 @@ test_device_loop(TestSocket) ->
     ok = socket:sendto(TestSocket, Message, PeerAddr),
     case Message of
         <<0, _/binary>> -> ok;
-        _ ->
-            test_device_loop(TestSocket)
+        _ -> test_device_loop(TestSocket)
     end.
 
 % =========================================================================== %
@@ -44,7 +43,8 @@ test_controller_loop(TestSocket, ClientIP, N) ->
         {failed, _Reason} = FailedTuple -> FailedTuple
     end.
 
-send_or_retry(_TestSocket, _Message, _PeerAddr, 0) -> {failed, <<"Did not receive packet">>};
+send_or_retry(_TestSocket, _Message, _PeerAddr, 0) ->
+    {failed, <<"Did not receive packet">>};
 send_or_retry(TestSocket, Message, PeerAddr, N) ->
     ok = socket:sendto(TestSocket, Message, PeerAddr),
     WaitStart = erlang:system_time(millisecond),

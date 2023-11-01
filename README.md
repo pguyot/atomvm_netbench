@@ -86,12 +86,18 @@ Running test device on Unix
 ---------------------------
 
 To check implementation of tests, the "test device" can be a local Unix machine
-running AtomVM.
+running AtomVM or OTP.
 
-For the device:
+For the device using AtomVM:
 ```shell
 rebar3 atomvm packbeam
 ../AtomVM/build/src/AtomVM _build/default/lib/atomvm_netbench.avm ../AtomVM/build/libs/atomvmlib.avm
+```
+
+For the device using Erlang/OTP:
+```shell
+rebar3 escriptize
+./_build/default/bin/atomvm_netbench --device
 ```
 
 For the controller:
@@ -103,9 +109,10 @@ rebar3 escriptize
 Tests
 -----
 
-Two tests are currently implemented:
+Three tests are currently implemented:
 - udp echo test: the device echoes an UDP packet sent from the controller,
   ten times.
 - tcp echo test: the device connects to a TCP Server running on the controller,
   and echoes the messages sent from the host, ten times.
-
+- tcp priv server test: the device runs as a TCP server and sends a file from
+  priv to each client, while the controller connects ten times in parallel

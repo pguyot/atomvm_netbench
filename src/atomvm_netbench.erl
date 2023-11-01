@@ -6,7 +6,11 @@
 
 -define(PORT, 40888).
 
-% escriptize entry point for OTP-based controller
+% escriptize entry point for:
+% - OTP-based controller (with an IP address)
+% - OTP-based device (with --device)
+main(["--device"]) ->
+    test_device:run(?PORT);
 main([ClientIPStr]) ->
     {ok, ClientIP} = inet:getaddr(ClientIPStr, inet),
     test_controller:run(ClientIP, ?PORT).
