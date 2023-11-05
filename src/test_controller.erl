@@ -4,7 +4,13 @@
 -module(test_controller).
 -export([run_all/2, run/3]).
 
--define(ALL_TESTS, [udp_echo_test, tcp_echo_test, tcp_priv_server_test, getaddrinfo_test]).
+-define(ALL_TESTS, [
+    udp_echo_test,
+    tcp_echo_test,
+    tcp_priv_server_test,
+    getaddrinfo_test,
+    https_client_test
+]).
 
 run_all(ClientIP, Port) ->
     run(ClientIP, Port, ?ALL_TESTS).
